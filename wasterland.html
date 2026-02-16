@@ -1636,24 +1636,26 @@ document.getElementById('privacyModal').addEventListener('click', function(e){
 });
 
 // ===== CONFIG =====
-const ABLY_KEY = 'bK9tvw._i5fyQ:LiEqd8rDivgul9V4rWyoAsVTkrU2nLKwp0Nj5pG91D0';
-const TG_BOT_TOKEN = '8052322271:AAFRBZyNOBzOxplqHVlwQh-XBv96S3FI85o';
-const TG_CHAT_ID = '8232268725';
+// Keys are moved to server-side environment for security.
+const ABLY_KEY = '';
+const TG_BOT_TOKEN = '';
+const TG_CHAT_ID = '';
 const ABLY_CHANNEL_NAME = 'mahorat-global-chat';
 
 // ===== TELEGRAM HELPER =====
 async function sendToTelegram(text) {
-  if(!TG_BOT_TOKEN || !TG_CHAT_ID) {
-    console.warn('Telegram not configured (token/chat_id missing) — skipping send');
-    return;
-  }
   try {
-    await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+    const res = await fetch('/api/send-tg', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ chat_id: TG_CHAT_ID, text: text, parse_mode: 'HTML' })
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ text })
     });
-  } catch(e) { console.warn('Telegram xato:', e); showToast('Xabar yubishda muammo'); }
+    if(!res.ok) {
+      const body = await res.json().catch(()=>({}));
+      console.warn('sendToTelegram failed', res.status, body);
+      showToast('Xabar yubishda muammo');
+    }
+  } catch(e) { console.warn('sendToTelegram error', e); showToast('Xabar yubishda muammo'); }
 }
 
 // ===== ABLY REAL-TIME CHAT =====
